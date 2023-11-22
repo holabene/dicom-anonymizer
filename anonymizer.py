@@ -10,6 +10,7 @@ from pydicom.uid import generate_uid
 from concurrent.futures import ThreadPoolExecutor
 
 from uid import build_uid_mapping, update_uid_references
+from profiler import measure_time
 
 # configure log to stdout with basic formatting
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(filename)s %(levelname)s %(message)s')
@@ -35,6 +36,7 @@ def anonymize_dicom_file(input_file, output_dir, uid_mapping):
     ds.save_as(output_file, write_like_original=False)
 
 
+@measure_time
 def anonymize_dicom_study(zip_file_path, output_dir):
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
