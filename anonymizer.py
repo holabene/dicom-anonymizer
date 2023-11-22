@@ -31,7 +31,7 @@ def anonymize_dicom_file(input_file, writer, uid_mapping):
     path = f"{ds.StudyInstanceUID}/{ds.SeriesInstanceUID}/{ds.SOPInstanceUID}.dcm"
     buffer = io.BytesIO()
     ds.save_as(buffer, write_like_original=False)
-    writer(path, buffer)
+    writer(buffer, path)
 
 
 @measure_time

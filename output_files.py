@@ -7,7 +7,7 @@ def disk_writer(output_dir: str):
     Create a writer that writes to disk
     :param output_dir: Path to the output directory
     """
-    def writer(path: str, buffer: io.BytesIO):
+    def writer(buffer: io.BytesIO, path: str):
         # create directories if necessary
         os.makedirs(os.path.join(output_dir, os.path.dirname(path)), exist_ok=True)
 
