@@ -53,18 +53,7 @@ def anonymize_dicom_study(zip_file_path, output_dir):
     logger.debug(f"Number of CPU cores: {num_cores}")
 
     # First pass: Build the UID mapping without saving output files
-    uid_mapping = {}
-
-    with ThreadPoolExecutor(max_workers=num_cores) as executor:
-        futures = []
-        for root, dirs, files in os.walk(working_dir):
-            for file in files:
-                input_file_path = os.path.join(root, file)
-                futures.append(executor.submit(build_uid_mapping, input_file_path, uid_mapping))
-
-        # Wait for all tasks to complete
-        for future in futures:
-            future.result()
+    uid_mapping = build_uid_mapping(working_dir)
 
     # Second pass: Anonymize each DICOM file in the study by updating UID references
     with ThreadPoolExecutor(max_workers=num_cores) as executor:

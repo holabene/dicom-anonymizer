@@ -1,8 +1,11 @@
 import logging
+import os
+
 import pydicom
 
 from pydicom.uid import generate_uid
-
+from concurrent.futures import ThreadPoolExecutor
+from input_files import iterate_files
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(filename)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
@@ -25,7 +28,7 @@ def get_new_uid(original_uid, uid_mapping):
         return new_uid
 
 
-def build_uid_mapping(input_file, uid_mapping):
+def get_new_uid_from_file(input_file, uid_mapping):
     # Load the DICOM file
     ds = pydicom.dcmread(fp=input_file, stop_before_pixels=True, force=True,
                          specific_tags=['StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID'])
@@ -34,6 +37,21 @@ def build_uid_mapping(input_file, uid_mapping):
     get_new_uid(ds.StudyInstanceUID, uid_mapping)
     get_new_uid(ds.SeriesInstanceUID, uid_mapping)
     get_new_uid(ds.SOPInstanceUID, uid_mapping)
+
+
+def build_uid_mapping(source):
+    uid_mapping = {}
+
+    with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
+        futures = []
+        for fp in iterate_files(source):
+            futures.append(executor.submit(get_new_uid_from_file, fp, uid_mapping))
+
+        # Wait for all tasks to complete
+        for future in futures:
+            future.result()
+
+    return uid_mapping
 
 
 def update_uid_references(ds, uid_mapping):
