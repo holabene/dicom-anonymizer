@@ -11,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from uid import build_uid_mapping, update_uid_references
 from profiler import measure_time
+from input_files import iterate_files
 
 # configure log to stdout with basic formatting
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(filename)s %(levelname)s %(message)s')
@@ -58,10 +59,8 @@ def anonymize_dicom_study(zip_file_path, output_dir):
     # Second pass: Anonymize each DICOM file in the study by updating UID references
     with ThreadPoolExecutor(max_workers=num_cores) as executor:
         futures = []
-        for root, dirs, files in os.walk(working_dir):
-            for file in files:
-                input_file_path = os.path.join(root, file)
-                futures.append(executor.submit(anonymize_dicom_file, input_file_path, output_dir, uid_mapping))
+        for fp in iterate_files(working_dir):
+            futures.append(executor.submit(anonymize_dicom_file, fp, output_dir, uid_mapping))
 
         # Wait for all tasks to complete
         for future in futures:
