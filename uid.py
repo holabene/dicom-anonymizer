@@ -1,0 +1,59 @@
+import logging
+import pydicom
+
+from pydicom.uid import generate_uid
+
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(filename)s %(levelname)s %(message)s')
+logger = logging.getLogger(__name__)
+
+
+def get_new_uid(original_uid, uid_mapping):
+    # Check if the original UID is already in the mapping
+    existing_uid = uid_mapping.get(original_uid)
+    if existing_uid:
+        return existing_uid
+    else:
+        # Generate a new UID
+        new_uid = generate_uid()
+        # Store the mapping for future use
+        uid_mapping[original_uid] = new_uid
+
+        # Log the mapping
+        logger.debug(f"New UID mapping: {original_uid} -> {new_uid}")
+
+        return new_uid
+
+
+def build_uid_mapping(input_file, uid_mapping):
+    # Load the DICOM file
+    ds = pydicom.dcmread(fp=input_file, stop_before_pixels=True, force=True,
+                         specific_tags=['StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID'])
+
+    # Set the UIDs using the create_or_get_uid function
+    get_new_uid(ds.StudyInstanceUID, uid_mapping)
+    get_new_uid(ds.SeriesInstanceUID, uid_mapping)
+    get_new_uid(ds.SOPInstanceUID, uid_mapping)
+
+
+def update_uid_references(ds, uid_mapping):
+    for data_element in ds:
+        # Check if the data element is a sequence
+        if data_element.VR == "SQ":
+            # Recursively update UIDs in sequences
+            for seq_item in data_element.value:
+                update_uid_references(seq_item, uid_mapping)
+
+        elif data_element.VR == "UI":
+            # Find the value in the UID mapping
+            value = data_element.value.decode('ascii') if isinstance(data_element.value, bytes) else data_element.value
+            new_uid = uid_mapping.get(value)
+
+            if new_uid:
+                data_element.value = new_uid
+
+                # Log tag, name and value as string
+                logger.debug(f"Updated {data_element.tag} {data_element.name} {value} -> {new_uid}")
+            else:
+                # Log tag, name and value as string
+                logger.debug(f"Not updating {data_element.tag} {data_element.name} {value}")
