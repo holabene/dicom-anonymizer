@@ -38,33 +38,23 @@ def anonymize_dicom_file(input_file, output_dir, uid_mapping):
 
 
 @measure_time
-def anonymize_dicom_study(zip_file_path, output_dir):
+def anonymize_dicom_study(source_path, output_dir):
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
-
-    # Create random working directory to unzip the DICOM study
-    working_dir = os.path.join(output_dir, f"tmp-{generate_uid()}")
-
-    # Unzip the DICOM study
-    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
-        zip_ref.extractall(working_dir)
 
     # Determine the number of CPU cores
     num_cores = os.cpu_count()
     logger.debug(f"Number of CPU cores: {num_cores}")
 
     # First pass: Build the UID mapping without saving output files
-    uid_mapping = build_uid_mapping(working_dir)
+    uid_mapping = build_uid_mapping(source_path)
 
     # Second pass: Anonymize each DICOM file in the study by updating UID references
     with ThreadPoolExecutor(max_workers=num_cores) as executor:
         futures = []
-        for fp in iterate_files(working_dir):
+        for fp in iterate_files(source_path):
             futures.append(executor.submit(anonymize_dicom_file, fp, output_dir, uid_mapping))
 
         # Wait for all tasks to complete
         for future in futures:
             future.result()
-
-    # Delete the working directory
-    shutil.rmtree(working_dir)
