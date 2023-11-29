@@ -30,7 +30,7 @@ def get_new_uid(original_uid, uid_mapping):
 
 def get_new_uid_from_file(input_file, uid_mapping):
     # Load the DICOM file
-    ds = pydicom.dcmread(fp=input_file, stop_before_pixels=True, force=True,
+    ds = pydicom.dcmread(fp=input_file, force=True,
                          specific_tags=['StudyInstanceUID', 'SeriesInstanceUID', 'SOPInstanceUID'])
 
     # Set the UIDs using the create_or_get_uid function

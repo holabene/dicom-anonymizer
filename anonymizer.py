@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 def anonymize_dicom_file(input_file, uid_mapping):
     # Load the DICOM file
-    ds = pydicom.dcmread(fp=input_file, stop_before_pixels=True, force=True)
+    ds = pydicom.dcmread(fp=input_file, force=True)
 
     # Anonymize the DICOM file
     # Replace or remove identifiable information
