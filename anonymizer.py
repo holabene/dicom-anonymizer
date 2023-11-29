@@ -42,15 +42,12 @@ def anonymize_dicom_file(input_file, uid_mapping):
 
 
 @measure_time
-def anonymize_dicom_study(source_path, output_dir):
+def anonymize_dicom_study(source_path, output_dir, zip_output=False):
     # Build the UID mapping
     uid_mapping = build_uid_mapping(source_path)
 
     # Create writer
     writer = disk_writer(output_dir)
-
-    # Create zip option
-    zip_output = True
 
     # Anonymize each DICOM file in the study by updating UID references
     with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
@@ -72,6 +69,9 @@ def anonymize_dicom_study(source_path, output_dir):
 
         if zip_output:
             writer(to_file_like_obj(stream_zip(results())), f'{output_name}.zip')
+            logger.info(f'Zip file {os.path.join(output_dir, output_name)}.zip created')
         else:
             for dicom_data, path_to_file in results():
                 writer(to_file_like_obj(dicom_data), os.path.join(output_name, path_to_file))
+
+            logger.info(f'DICOM files written to {os.path.join(output_dir, output_name)}')
