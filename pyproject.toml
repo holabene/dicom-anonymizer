@@ -10,6 +10,8 @@ packages = [{include = "dicom_anonymizer"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 pydicom = "^2.4.3"
+stream-zip = "^0.0.68"
+to-file-like-obj = "^0.0.5"
 
 
 [build-system]
