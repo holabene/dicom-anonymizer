@@ -2,6 +2,7 @@ import os
 import logging
 import httpx
 import asyncio
+import aioboto3
 
 logger = logging.getLogger(__name__)
 
@@ -42,5 +43,29 @@ def http_writer(url: str):
     def writer(bytes_iterator, path: str):
         loop = asyncio.get_event_loop()
         loop.run_until_complete(async_http_writer(bytes_iterator, path))
+
+    return writer
+
+
+def s3_writer(bucket: str, output_dir: str):
+    """
+    Create a writer that writes to S3
+    :param bucket: Name of the S3 bucket
+    :param output_dir: Path to the output directory
+    """
+    session = aioboto3.Session()
+
+    async def async_s3_writer(file_like_object, path: str):
+        # create async iterator
+        async with session.client('s3') as s3:
+            await s3.upload_fileobj(
+                Fileobj=file_like_object,
+                Bucket=bucket,
+                Key=os.path.join(output_dir, path) if output_dir else path
+            )
+
+    def writer(file_like_object, path: str):
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(async_s3_writer(file_like_object, path))
 
     return writer

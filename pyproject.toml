@@ -14,6 +14,7 @@ stream-zip = "^0.0.68"
 to-file-like-obj = "^0.0.5"
 httpx = "^0.25.2"
 asyncio = "^3.4.3"
+aioboto3 = "^12.0.0"
 
 
 [build-system]

@@ -8,7 +8,7 @@ import io
 from uid import build_uid_mapping, update_uid_references
 from profiler import measure_time
 from input_files import iterate_files
-from output_files import disk_writer, http_writer
+from output_files import disk_writer, http_writer, s3_writer
 
 from concurrent.futures import ThreadPoolExecutor
 from stream_zip import ZIP_32, stream_zip
@@ -57,11 +57,18 @@ def anonymize_dicom_study(source_path, zip_output, **kwargs):
     # Get --output-http argument
     output_http = kwargs.get('output_http', None)
 
+    # Get --output-s3 argument
+    output_s3 = kwargs.get('output_s3', None)
+
     # Create writer
     if output_http:
         writer = http_writer(output_http)
         output_name = ''
         final_message = f'Output sent to {output_http}' + (' (zip)' if zip_output else '')
+    elif output_s3:
+        writer = s3_writer(output_s3, output_dir)
+        output_name = f'output_{datetime.now().strftime("%Y%m%d_%H%M%S_%f")}'
+        final_message = f'Output sent to S3 {output_s3}' + (' (zip)' if zip_output else '')
     else:
         writer = disk_writer(output_dir)
         output_name = f'output_{datetime.now().strftime("%Y%m%d_%H%M%S_%f")}'
