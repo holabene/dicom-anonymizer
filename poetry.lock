@@ -15,7 +15,39 @@ files = [
 [package.extras]
 docs = ["matplotlib", "numpy", "numpydoc", "pillow", "sphinx", "sphinx-copybutton", "sphinx-gallery", "sphinx_rtd_theme", "sphinxcontrib-napoleon"]
 
+[[package]]
+name = "stream-zip"
+version = "0.0.68"
+description = "Python function to construct a ZIP archive with stream processing - without having to store the entire ZIP in memory or disk"
+category = "main"
+optional = false
+python-versions = ">=3.6.7"
+files = [
+    {file = "stream_zip-0.0.68-py3-none-any.whl", hash = "sha256:4fe605097235b6cc85294e7f8ef6b8f38af37f12cf0e76e0c915d7d4eea2fe6f"},
+    {file = "stream_zip-0.0.68.tar.gz", hash = "sha256:db2a318d0108617bcf99fed027848c4e2a3bc2368bce22cab5a27525aa55fb21"},
+]
+
+[package.extras]
+ci = ["coverage (==6.2)", "pytest (==6.2.5)", "pytest-cov (==3.0.0)", "stream-unzip (==0.0.86)"]
+dev = ["coverage (>=6.2)", "pytest (>=6.2.5)", "pytest-cov (>=3.0.0)", "stream-unzip (>=0.0.86)"]
+
+[[package]]
+name = "to-file-like-obj"
+version = "0.0.5"
+description = "Utility function to convert an iterable of bytes or str to a readable file-like object."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "to_file_like_obj-0.0.5-py3-none-any.whl", hash = "sha256:82dabdae501e22b6bb2ab2277da68687ee525187298128fc4bdc0b99a9a2be22"},
+    {file = "to_file_like_obj-0.0.5.tar.gz", hash = "sha256:0e1fe395e58eb3a80687f864d405da7122721c6cf44009364067a3a518b8a9ab"},
+]
+
+[package.extras]
+ci = ["coverage", "pytest", "pytest-cov"]
+dev = ["pytest (>=7.2.1)"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "0cb7b83fee537ec97449961bec7f7dbf427c0373c6d175987667b7859ac297ec"
+content-hash = "642215d0f45b2c37df8644faef4d25a2ee6bfc049d34fb7ae21797fc03126bbf"
