@@ -17,7 +17,12 @@ from to_file_like_obj import to_file_like_obj
 from datetime import datetime
 
 # configure log to stdout with basic formatting
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(filename)s %(levelname)s %(message)s')
+logging.basicConfig(
+    format="%(levelname)s [%(asctime)s] %(name)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=logging.INFO
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -59,8 +64,9 @@ def anonymize_dicom_study(source_path, zip_output, **kwargs):
         final_message = f'Output sent to {output_http}' + (' (zip)' if zip_output else '')
     else:
         writer = disk_writer(output_dir)
-        output_name = f'output_{datetime.now().strftime("%Y%m%d_%H%M%S_%f")}' # path is results_{timestamp}_{microsecond}
-        final_message = f'Output saved to {os.path.join(output_dir, output_name)}' + ('.zip' if zip_output else '')
+        output_name = f'output_{datetime.now().strftime("%Y%m%d_%H%M%S_%f")}'
+        final_message = (f'Output saved to {os.path.abspath(os.path.join(output_dir, output_name))}' +
+                         ('.zip' if zip_output else ''))
 
     # Anonymize each DICOM file in the study by updating UID references
     with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
@@ -83,4 +89,5 @@ def anonymize_dicom_study(source_path, zip_output, **kwargs):
             for dicom_data, path_to_file in results():
                 writer(to_file_like_obj(dicom_data), os.path.join(output_name, path_to_file))
 
+    logger.info(f"Finished processing {len(futures)} files from {os.path.abspath(source_path)}")
     logger.info(final_message)
