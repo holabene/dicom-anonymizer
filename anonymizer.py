@@ -42,9 +42,12 @@ def anonymize_dicom_file(input_file, uid_mapping):
 
 
 @measure_time
-def anonymize_dicom_study(source_path, output_dir, zip_output=False):
+def anonymize_dicom_study(source_path, zip_output, **kwargs):
     # Build the UID mapping
     uid_mapping = build_uid_mapping(source_path)
+
+    # Get --output-dir argument
+    output_dir = kwargs.get('output_dir', '.')
 
     # Create writer
     writer = disk_writer(output_dir)

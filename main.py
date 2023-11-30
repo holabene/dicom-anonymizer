@@ -10,16 +10,16 @@ def main():
 
     # Define command-line arguments
     parser.add_argument("input_path", help="Path to the input DICOM files")
-    parser.add_argument("output_path", help="Path to the output directory for anonymized DICOM files")
 
-    # Define option zip output true/false
+    # Define command line options
+    parser.add_argument("--output-dir", help="Output directory for anonymized DICOM files")
     parser.add_argument("--zip", action="store_true", help="Zip output")
 
     # Parse command-line arguments
     args = parser.parse_args()
 
     # Anonymize DICOM study
-    anonymize_dicom_study(args.input_path, args.output_path, args.zip)
+    anonymize_dicom_study(args.input_path, args.zip, **vars(args))
 
 
 if __name__ == "__main__":
