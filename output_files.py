@@ -1,7 +1,9 @@
 import os
 import logging
+import httpx
+import asyncio
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(filename)s %(levelname)s %(message)s')
+logging.basicConfig(level=logging.WARNING, format='%(asctime)s %(filename)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -18,5 +20,28 @@ def disk_writer(output_dir: str):
         with open(os.path.join(output_dir, path), 'wb') as file:
             while chunk := bytes_iterator.read(8192):
                 file.write(chunk)
+
+    return writer
+
+
+def http_writer(url: str):
+    """
+    Create a writer that writes to HTTP
+    :param url: URL of the HTTP endpoint
+    """
+    async def async_http_writer(bytes_iterator, path: str):
+        # create async iterator
+        async def async_iterator():
+            while chunk := bytes_iterator.read(8192):
+                yield chunk
+
+        content_type = 'application/zip' if path.endswith('.zip') else 'application/dicom'
+
+        async with httpx.AsyncClient() as client:
+            await client.post(url, data=async_iterator(), headers={'Content-Type': content_type})
+
+    def writer(bytes_iterator, path: str):
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(async_http_writer(bytes_iterator, path))
 
     return writer

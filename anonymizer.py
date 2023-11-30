@@ -8,7 +8,7 @@ import io
 from uid import build_uid_mapping, update_uid_references
 from profiler import measure_time
 from input_files import iterate_files
-from output_files import disk_writer
+from output_files import disk_writer, http_writer
 
 from concurrent.futures import ThreadPoolExecutor
 from stream_zip import ZIP_32, stream_zip
@@ -47,10 +47,20 @@ def anonymize_dicom_study(source_path, zip_output, **kwargs):
     uid_mapping = build_uid_mapping(source_path)
 
     # Get --output-dir argument
-    output_dir = kwargs.get('output_dir', '.')
+    output_dir = kwargs.get('output_dir', None)
+
+    # Get --output-http argument
+    output_http = kwargs.get('output_http', None)
 
     # Create writer
-    writer = disk_writer(output_dir)
+    if output_http:
+        writer = http_writer(output_http)
+        output_name = ''
+        final_message = f'Output sent to {output_http}' + (' (zip)' if zip_output else '')
+    else:
+        writer = disk_writer(output_dir)
+        output_name = f'output_{datetime.now().strftime("%Y%m%d_%H%M%S_%f")}' # path is results_{timestamp}_{microsecond}
+        final_message = f'Output saved to {os.path.join(output_dir, output_name)}' + ('.zip' if zip_output else '')
 
     # Anonymize each DICOM file in the study by updating UID references
     with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
@@ -67,14 +77,10 @@ def anonymize_dicom_study(source_path, zip_output, **kwargs):
                 else:
                     yield buffer, path
 
-        # path is results_{timestamp}_{microsecond}
-        output_name = f'output_{datetime.now().strftime("%Y%m%d_%H%M%S_%f")}'
-
         if zip_output:
             writer(to_file_like_obj(stream_zip(results())), f'{output_name}.zip')
-            logger.info(f'Zip file {os.path.join(output_dir, output_name)}.zip created')
         else:
             for dicom_data, path_to_file in results():
                 writer(to_file_like_obj(dicom_data), os.path.join(output_name, path_to_file))
 
-            logger.info(f'DICOM files written to {os.path.join(output_dir, output_name)}')
+    logger.info(final_message)

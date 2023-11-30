@@ -13,6 +13,7 @@ def main():
 
     # Define command line options
     parser.add_argument("--output-dir", help="Output directory for anonymized DICOM files")
+    parser.add_argument("--output-http", help="HTTP endpoint for anonymized DICOM files")
     parser.add_argument("--zip", action="store_true", help="Zip output")
 
     # Parse command-line arguments
