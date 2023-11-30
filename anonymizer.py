@@ -52,13 +52,13 @@ def anonymize_dicom_study(source_path, zip_output, **kwargs):
     uid_mapping = build_uid_mapping(source_path)
 
     # Get --output-dir argument
-    output_dir = kwargs.get('output_dir', None)
+    output_dir = kwargs.get('output_dir')
 
     # Get --output-http argument
-    output_http = kwargs.get('output_http', None)
+    output_http = kwargs.get('output_http')
 
     # Get --output-s3 argument
-    output_s3 = kwargs.get('output_s3', None)
+    output_s3 = kwargs.get('output_s3')
 
     # Create writer
     if output_http:
