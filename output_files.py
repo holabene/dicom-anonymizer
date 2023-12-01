@@ -58,11 +58,7 @@ def s3_writer(bucket: str, output_dir: str):
     async def async_s3_writer(file_object, path: str):
         # create async iterator
         async with session.client('s3') as s3:
-            await s3.upload_fileobj(
-                Fileobj=file_object,
-                Bucket=bucket,
-                Key=os.path.join(output_dir, path) if output_dir else path
-            )
+            await s3.upload_fileobj(Fileobj=file_object, Bucket=bucket, Key=f"{output_dir}/{path}")
 
     def writer(file_object, path: str):
         loop = asyncio.get_event_loop()

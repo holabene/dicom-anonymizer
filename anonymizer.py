@@ -15,6 +15,7 @@ from stream_zip import ZIP_32, stream_zip
 from stat import S_IFREG
 from to_file_like_obj import to_file_like_obj
 from datetime import datetime
+from urllib.parse import urlunparse
 
 # configure log to stdout with basic formatting
 logging.basicConfig(
@@ -52,7 +53,7 @@ def anonymize_dicom_study(source_path, zip_output, **kwargs):
     uid_mapping = build_uid_mapping(source_path)
 
     # Get --output-dir argument
-    output_dir = kwargs.get('output_dir')
+    output_dir = kwargs.get('output_dir') or ''
 
     # Get --output-http argument
     output_http = kwargs.get('output_http')
@@ -60,20 +61,21 @@ def anonymize_dicom_study(source_path, zip_output, **kwargs):
     # Get --output-s3 argument
     output_s3 = kwargs.get('output_s3')
 
+    # trim trailing slash from output_dir
+    output_dir = output_dir.rstrip('/')
+    output_name = f'output_{datetime.now().strftime("%Y%m%d_%H%M%S_%f")}' + ('.zip' if zip_output else '')
+    output_path = os.path.join(output_dir, output_name)
+
     # Create writer
     if output_http:
         writer = http_writer(output_http)
-        output_name = ''
-        final_message = f'Output sent to {output_http}' + (' (zip)' if zip_output else '')
+        final_message = f'Results posted to {output_http}'
     elif output_s3:
         writer = s3_writer(output_s3, output_dir)
-        output_name = f'output_{datetime.now().strftime("%Y%m%d_%H%M%S_%f")}'
-        final_message = f'Output sent to S3 {output_s3}' + (' (zip)' if zip_output else '')
+        final_message = f'Results uploaded to {urlunparse(("s3", output_s3, output_path, "", "", ""))}'
     else:
         writer = disk_writer(output_dir)
-        output_name = f'output_{datetime.now().strftime("%Y%m%d_%H%M%S_%f")}'
-        final_message = (f'Output saved to {os.path.abspath(os.path.join(output_dir, output_name))}' +
-                         ('.zip' if zip_output else ''))
+        final_message = f'Results saved to {os.path.abspath(output_path)}'
 
     # Anonymize each DICOM file in the study by updating UID references
     with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
@@ -91,7 +93,7 @@ def anonymize_dicom_study(source_path, zip_output, **kwargs):
                     yield buffer, path
 
         if zip_output:
-            writer(to_file_like_obj(stream_zip(results())), f'{output_name}.zip')
+            writer(to_file_like_obj(stream_zip(results())), output_name)
         else:
             for dicom_data, path_to_file in results():
                 writer(to_file_like_obj(dicom_data), os.path.join(output_name, path_to_file))
