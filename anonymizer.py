@@ -53,29 +53,26 @@ def anonymize_dicom_study(source_path, zip_output, **kwargs):
     uid_mapping = build_uid_mapping(source_path)
 
     # Get --output-dir argument
-    output_dir = kwargs.get('output_dir') or ''
+    output_dir = (kwargs.get('output_dir') or '').rstrip('/')
 
     # Get --output-http argument
     output_http = kwargs.get('output_http')
 
     # Get --output-s3 argument
-    output_s3 = kwargs.get('output_s3')
+    output_s3 = (kwargs.get('output_s3') or '').rstrip('/')
 
-    # trim trailing slash from output_dir
-    output_dir = output_dir.rstrip('/')
     output_name = f'output_{datetime.now().strftime("%Y%m%d_%H%M%S_%f")}' + ('.zip' if zip_output else '')
-    output_path = os.path.join(output_dir, output_name)
 
     # Create writer
     if output_http:
         writer = http_writer(output_http)
         final_message = f'Results posted to {output_http}'
     elif output_s3:
-        writer = s3_writer(output_s3, output_dir)
-        final_message = f'Results uploaded to {urlunparse(("s3", output_s3, output_path, "", "", ""))}'
+        writer = s3_writer(output_s3)
+        final_message = f'Results uploaded to {output_s3}/{output_name}'
     else:
         writer = disk_writer(output_dir)
-        final_message = f'Results saved to {os.path.abspath(output_path)}'
+        final_message = f'Results saved to {os.path.abspath(os.path.join(output_dir, output_name))}'
 
     # Anonymize each DICOM file in the study by updating UID references
     with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:

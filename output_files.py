@@ -4,6 +4,8 @@ import httpx
 import asyncio
 import aioboto3
 
+from urllib.parse import urlparse
+
 logger = logging.getLogger(__name__)
 
 
@@ -47,12 +49,15 @@ def http_writer(url: str):
     return writer
 
 
-def s3_writer(bucket: str, output_dir: str):
+def s3_writer(s3_url: str):
     """
     Create a writer that uploads to S3
-    :param bucket: Name of the S3 bucket
-    :param output_dir: Path to the output directory
+    :param s3_url: URL of the S3 bucket
     """
+    # parse s3_url to get bucket and path
+    bucket = urlparse(s3_url).hostname
+    output_dir = urlparse(s3_url).path.lstrip('/')
+
     session = aioboto3.Session()
 
     async def async_s3_writer(file_object, path: str):

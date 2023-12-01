@@ -14,7 +14,7 @@ def main():
     # Define command line options
     parser.add_argument("--output-dir",
                         metavar="PATH",
-                        help="Output directory for output files (for local filesystem and S3 writer)")
+                        help="Path to directory for output files")
 
     parser.add_argument("--output-http",
                         metavar="URL",
@@ -31,17 +31,9 @@ def main():
     # Parse command-line arguments
     args = parser.parse_args()
 
-    # if --output-http and --output-s3 are not specified, --output-dir is required
-    if not args.output_http and not args.output_s3 and not args.output_dir:
-        parser.error("Please specify --output-dir for local filesystem output")
-
-    # if --output-http is specified, --output-dir is not allowed
-    if args.output_http and args.output_dir:
-        parser.error("--output-dir is not allowed for HTTP output")
-
-    # setting --output-http and --output-s3 together is not allowed
-    if args.output_http and args.output_s3:
-        parser.error("Please select between HTTP or S3 output")
+    # only specify one of --output-http, --output-s3, or --output-dir
+    if sum([args.output_http is not None, args.output_s3 is not None, args.output_dir is not None]) > 1:
+        parser.error("Please select only one of --output-dir, --output-http, or --output-s3")
 
     # Anonymize DICOM study
     anonymize_dicom_study(args.input_path, args.zip, **vars(args))
