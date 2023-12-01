@@ -1,0 +1,17 @@
+services:
+    # orthanc
+    orthanc:
+        image: jodogne/orthanc-plugins
+        ports:
+          - "8042:8042"
+          - "4242:4242"
+    # minio
+    minio:
+        image: minio/minio
+        entrypoint: sh
+        command: -c 'mkdir -p /data/mybucket && /usr/bin/minio server /data'
+        environment:
+          MINIO_CONSOLE_ADDRESS: ":9090"
+        ports:
+          - "9000:9000"
+          - "9090:9090"

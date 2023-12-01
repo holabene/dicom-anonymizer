@@ -7,7 +7,6 @@ from pydicom.uid import generate_uid
 from concurrent.futures import ThreadPoolExecutor
 from input_files import iterate_files
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(filename)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
 
 
