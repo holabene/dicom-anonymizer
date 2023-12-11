@@ -27,16 +27,21 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def modify_file(input_file, uid_mapping):
-    # Load the DICOM file
-    ds = pydicom.dcmread(fp=input_file, force=True)
-
+def anonymize(ds: pydicom.Dataset) -> pydicom.Dataset:
     # Anonymize the DICOM file
     # Replace or remove identifiable information
     ds.PatientName = "Anonymous"
     ds.PatientID = "AnonID"
 
+    return ds
+
+
+def modify_file(input_file, uid_mapping):
+    # Load the DICOM file
+    ds = pydicom.dcmread(fp=input_file, force=True)
+
     update_uid_references(ds, uid_mapping)
+    anonymize(ds)
 
     # Write the anonymized DICOM file to buffer
     path = f"{ds.StudyInstanceUID}/{ds.SeriesInstanceUID}/{ds.SOPInstanceUID}.dcm"
