@@ -54,7 +54,6 @@ def anonymize_dicom_study(input_path, output_path, zip_output):
 
     # Parse output path URL
     parts = urlparse(output_path)
-    output_path = urlunparse((parts.scheme, parts.netloc, parts.path, parts.params, parts.query, parts.fragment))
     output_name = f'results_{datetime.now().strftime("%Y%m%d_%H%M%S_%f")}' + ('.zip' if zip_output else '')
 
     # Create writer
