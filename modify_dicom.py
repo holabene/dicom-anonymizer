@@ -27,7 +27,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def anonymize_dicom_file(input_file, uid_mapping):
+def modify_file(input_file, uid_mapping):
     # Load the DICOM file
     ds = pydicom.dcmread(fp=input_file, force=True)
 
@@ -48,7 +48,7 @@ def anonymize_dicom_file(input_file, uid_mapping):
 
 
 @measure_time
-def anonymize_dicom_study(input_path, output_path, zip_output):
+def process_files(input_path, output_path, zip_output):
     # Build the UID mapping
     uid_mapping = build_uid_mapping(input_path)
 
@@ -74,7 +74,7 @@ def anonymize_dicom_study(input_path, output_path, zip_output):
     with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         futures = []
         for fp in iterate_files(input_path):
-            futures.append(executor.submit(anonymize_dicom_file, fp, uid_mapping))
+            futures.append(executor.submit(modify_file, fp, uid_mapping))
 
         # Wait for all tasks to complete
         def results():

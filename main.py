@@ -1,7 +1,7 @@
 # main.py
 
 import argparse
-from anonymizer import anonymize_dicom_study
+from modify_dicom import process_files
 
 
 def main():
@@ -18,8 +18,8 @@ def main():
     # Parse command-line arguments
     args = parser.parse_args()
 
-    # Anonymize DICOM study
-    anonymize_dicom_study(args.input_path, args.output_path, args.zip)
+    # Modify DICOM study
+    process_files(args.input_path, args.output_path, args.zip)
 
 
 if __name__ == "__main__":

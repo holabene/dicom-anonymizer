@@ -1,5 +1,5 @@
 # dicom_anonymizer/__init__.py
 
-from .anonymizer import anonymize_dicom_study
+from .modify_dicom import process_files
 
-__all__ = ["anonymize_dicom_study"]
+__all__ = ["process_files"]
