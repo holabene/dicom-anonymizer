@@ -9,6 +9,7 @@ from uid import build_uid_mapping, update_uid_references
 from profiler import measure_time
 from input_files import iterate_files
 from output_files import disk_writer, http_writer, s3_writer
+from anonymize import anonymize
 
 from concurrent.futures import ThreadPoolExecutor
 from stream_zip import ZIP_32, stream_zip
@@ -25,15 +26,6 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-
-
-def anonymize(ds: pydicom.Dataset) -> pydicom.Dataset:
-    # Anonymize the DICOM file
-    # Replace or remove identifiable information
-    ds.PatientName = "Anonymous"
-    ds.PatientID = "AnonID"
-
-    return ds
 
 
 def modify_file(input_file, uid_mapping, keep_patient_data):
