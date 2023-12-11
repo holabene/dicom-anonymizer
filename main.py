@@ -15,12 +15,13 @@ def main():
     # Define command line options
     parser.add_argument("--zip", action="store_true", help="Produce zip archive as output")
     parser.add_argument("--keep-original-uids", action="store_true", help="Keep original UIDs in the output DICOM files")
+    parser.add_argument("--keep-patient-data", action="store_true", help="Do not anonymize patient data")
 
     # Parse command-line arguments
     args = parser.parse_args()
 
     # Modify DICOM study
-    process_files(args.input_path, args.output_path, args.zip, args.keep_original_uids)
+    process_files(args.input_path, args.output_path, args.zip, args.keep_original_uids, args.keep_patient_data)
 
 
 if __name__ == "__main__":

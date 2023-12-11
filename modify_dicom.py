@@ -36,7 +36,7 @@ def anonymize(ds: pydicom.Dataset) -> pydicom.Dataset:
     return ds
 
 
-def modify_file(input_file, uid_mapping):
+def modify_file(input_file, uid_mapping, keep_patient_data):
     # Load the DICOM file
     ds = pydicom.dcmread(fp=input_file, force=True)
 
@@ -44,7 +44,9 @@ def modify_file(input_file, uid_mapping):
     if uid_mapping:
         update_uid_references(ds, uid_mapping)
 
-    anonymize(ds)
+    # if keep_patient_data is False, anonymize the DICOM file
+    if not keep_patient_data:
+        anonymize(ds)
 
     # Write the anonymized DICOM file to buffer
     path = f"{ds.StudyInstanceUID}/{ds.SeriesInstanceUID}/{ds.SOPInstanceUID}.dcm"
@@ -56,7 +58,7 @@ def modify_file(input_file, uid_mapping):
 
 
 @measure_time
-def process_files(input_path, output_path, zip_output, keep_original_uids):
+def process_files(input_path, output_path, zip_output, keep_original_uids, keep_patient_data):
     # Build the UID mapping
     uid_mapping = build_uid_mapping(input_path) if not keep_original_uids else {}
 
@@ -82,7 +84,7 @@ def process_files(input_path, output_path, zip_output, keep_original_uids):
     with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         futures = []
         for fp in iterate_files(input_path):
-            futures.append(executor.submit(modify_file, fp, uid_mapping))
+            futures.append(executor.submit(modify_file, fp, uid_mapping, keep_patient_data))
 
         # Wait for all tasks to complete
         def results():
