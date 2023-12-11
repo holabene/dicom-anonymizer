@@ -14,12 +14,13 @@ def main():
 
     # Define command line options
     parser.add_argument("--zip", action="store_true", help="Produce zip archive as output")
+    parser.add_argument("--keep-original-uids", action="store_true", help="Keep original UIDs in the output DICOM files")
 
     # Parse command-line arguments
     args = parser.parse_args()
 
     # Modify DICOM study
-    process_files(args.input_path, args.output_path, args.zip)
+    process_files(args.input_path, args.output_path, args.zip, args.keep_original_uids)
 
 
 if __name__ == "__main__":

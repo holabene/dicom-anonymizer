@@ -40,7 +40,10 @@ def modify_file(input_file, uid_mapping):
     # Load the DICOM file
     ds = pydicom.dcmread(fp=input_file, force=True)
 
-    update_uid_references(ds, uid_mapping)
+    # if uid_mapping is not empty, update the UIDs
+    if uid_mapping:
+        update_uid_references(ds, uid_mapping)
+
     anonymize(ds)
 
     # Write the anonymized DICOM file to buffer
@@ -53,9 +56,9 @@ def modify_file(input_file, uid_mapping):
 
 
 @measure_time
-def process_files(input_path, output_path, zip_output):
+def process_files(input_path, output_path, zip_output, keep_original_uids):
     # Build the UID mapping
-    uid_mapping = build_uid_mapping(input_path)
+    uid_mapping = build_uid_mapping(input_path) if not keep_original_uids else {}
 
     # Parse output path URL
     parts = urlparse(output_path)
