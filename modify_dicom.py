@@ -51,9 +51,6 @@ def modify_file(input_file, uid_mapping, keep_patient_data):
 
 @measure_time
 def process_files(input_path, output_path, zip_output, keep_original_uids, keep_patient_data):
-    # Build the UID mapping
-    uid_mapping = build_uid_mapping(input_path) if not keep_original_uids else {}
-
     # Parse output path URL
     parts = urlparse(output_path)
     output_name = f'results_{datetime.now().strftime("%Y%m%d_%H%M%S_%f")}' + ('.zip' if zip_output else '')
@@ -73,6 +70,9 @@ def process_files(input_path, output_path, zip_output, keep_original_uids, keep_
         raise ValueError(f'Unsupported output method: {parts.scheme}')
 
     logger.info(f"Start processing {os.path.abspath(input_path)} to {output_path} {'(zip)' if zip_output else ''}")
+
+    # Build the UID mapping
+    uid_mapping = build_uid_mapping(input_path) if not keep_original_uids else {}
 
     # Anonymize each DICOM file in the study by updating UID references
     with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
