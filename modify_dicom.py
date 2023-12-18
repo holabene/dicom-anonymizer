@@ -11,7 +11,7 @@ from input_files import iterate_files
 from output_files import disk_writer, http_writer, s3_writer
 from anonymize import anonymize
 
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from stream_zip import ZIP_32, stream_zip
 from stat import S_IFREG
 from to_file_like_obj import to_file_like_obj
@@ -72,6 +72,8 @@ def process_files(input_path, output_path, zip_output, keep_original_uids, keep_
     else:
         raise ValueError(f'Unsupported output method: {parts.scheme}')
 
+    logger.info(f"Start processing {os.path.abspath(input_path)} to {output_path} {'(zip)' if zip_output else ''}")
+
     # Anonymize each DICOM file in the study by updating UID references
     with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         futures = []
@@ -80,7 +82,7 @@ def process_files(input_path, output_path, zip_output, keep_original_uids, keep_
 
         # Wait for all tasks to complete
         def results():
-            for future in futures:
+            for future in as_completed(futures):
                 buffer, path = future.result()
                 if zip_output:
                     yield path, datetime.now(), S_IFREG | 0o600, ZIP_32, (buffer.getvalue(),)
