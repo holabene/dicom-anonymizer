@@ -83,14 +83,14 @@ def process_files(input_path, output_path, zip_output, keep_original_uids, keep_
         # Wait for all tasks to complete
         def results():
             for future in as_completed(futures):
-                buffer, path = future.result()
-                if zip_output:
-                    yield path, datetime.now(), S_IFREG | 0o600, ZIP_32, (buffer.getvalue(),)
-                else:
-                    yield buffer, path
+                yield future.result()
+
+        def to_stream_zip(res):
+            for buffer, path in res:
+                yield path, datetime.now(), S_IFREG | 0o600, ZIP_32, (buffer.getvalue(),)
 
         if zip_output:
-            writer(to_file_like_obj(stream_zip(results())), output_name)
+            writer(to_file_like_obj(stream_zip(to_stream_zip(results()))), output_name)
         else:
             for dicom_data, path_to_file in results():
                 writer(to_file_like_obj(dicom_data), os.path.join(output_name, path_to_file))
