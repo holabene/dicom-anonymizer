@@ -17,6 +17,7 @@ from stat import S_IFREG
 from to_file_like_obj import to_file_like_obj
 from datetime import datetime
 from urllib.parse import urlunparse, urlparse
+from tqdm import tqdm
 
 # configure log to stdout with basic formatting
 logging.basicConfig(
@@ -72,12 +73,12 @@ def process_files(input_path, output_path, zip_output, keep_original_uids, keep_
     logger.info(f"Start processing {os.path.abspath(input_path)} to {output_path} {'(zip)' if zip_output else ''}")
 
     # Build the UID mapping
-    uid_mapping = build_uid_mapping(input_path) if not keep_original_uids else {}
+    uid_mapping, files_count = build_uid_mapping(input_path) if not keep_original_uids else ({}, None)
 
     # Anonymize each DICOM file in the study by updating UID references
     with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         futures = []
-        for fp in iterate_files(input_path):
+        for fp in tqdm(iterate_files(input_path), total=files_count, desc="Processing files", unit=""):
             futures.append(executor.submit(modify_file, fp, uid_mapping, keep_patient_data))
 
         # Wait for all tasks to complete

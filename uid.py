@@ -40,6 +40,7 @@ def get_new_uid_from_file(input_file, uid_mapping):
 
 def build_uid_mapping(source):
     uid_mapping = {}
+    files_count = None
 
     with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         futures = []
@@ -50,7 +51,9 @@ def build_uid_mapping(source):
         for future in futures:
             future.result()
 
-    return uid_mapping
+        files_count = len(futures)
+
+    return uid_mapping, files_count
 
 
 def update_uid_references(ds, uid_mapping):
